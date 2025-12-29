@@ -1,23 +1,21 @@
 import Form from "next/form";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
+import { Input } from "@heroui/react";
+import { startTransition, useActionState, useState } from "react";
+import { createNote, updateNote } from "@/app/(routes)/actions";
 
 export default async function Page() {
+  const [note, setNote] = useState<number | undefined>(undefined);
+  const [tate, action, pending] = useActionState(createNote, false);
+  const [state, action, pending] = useActionState(updateNote, false);
   const notes = await prisma.note.findMany();
 
-  async function createPost(formData: FormData) {
-    "use server";
-
-    const content = formData.get("content") as string;
-
-    await prisma.note.create({
-      data: {
-        content,
-        category: "index",
-      },
-    });
-
-    revalidatePath("/");
+  const handleKeyPress = (e){
+    if (e.keyCode === 13){
+      e.target.blur();
+      //Write you validation logic here
+    }
   }
 
   return (
@@ -25,28 +23,19 @@ export default async function Page() {
       <h1 className="text-2xl font-bold mb-6">TO DO LIST</h1>
       <div>
         {notes.map((note) => (
-          <div key={note.id}>{note.content}</div>
+          <Input
+            key={note.id}
+            value={note.content ?? ""}
+            onFocus={() => setNote(note.id)}
+            onKeyDown={handleKeyPress}
+          />
         ))}
       </div>
-      <Form action={createPost} className="space-y-6">
-        <div>
-          <label htmlFor="content" className="block text-lg mb-2">
-            Content
-          </label>
-          <textarea
-            id="content"
-            name="content"
-            placeholder="Write your post content here..."
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600"
-        >
-          Create Post
-        </button>
-      </Form>
+      <Input
+        placeholder="What on your mind"
+        onBlur={() => startTransition(action)}
+      />
+      {/*  TODO how to edit already existing entities in db (add status to the note: checked or not)*/}
     </div>
   );
 }
