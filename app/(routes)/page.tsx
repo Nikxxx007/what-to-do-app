@@ -11,7 +11,11 @@ import React, {
   useState,
   useTransition,
 } from "react";
-import { createNote, getNotes, updateNote } from "@/app/(routes)/actions";
+import {
+  createNoteAction,
+  getNotesActions,
+  updateNoteAction,
+} from "@/app/(routes)/actions";
 import { NoteModel } from "@/app/generated/prisma/models/Note";
 
 export default function Page() {
@@ -22,14 +26,14 @@ export default function Page() {
 
   const updateData = () => {
     startNotesTransition(async () => {
-      const notesList = await getNotes();
+      const notesList = await getNotesActions();
       setNotes(notesList);
     });
   };
 
   const updateNote = async (noteId: number, content: string) => {
     startUpdateTransition(async () => {
-      await updateNote(noteId, content);
+      await updateNoteAction(noteId, content);
       updateData();
     });
   };
@@ -62,7 +66,7 @@ export default function Page() {
 
   const createNewNote = async (content: string) => {
     startUpdateTransition(async () => {
-      await createNote(content);
+      await createNoteAction(content);
       setNewNoteContent("");
       updateData();
     });
@@ -91,14 +95,7 @@ export default function Page() {
             <Input
               key={note.id}
               value={note.content ?? ""}
-              onChange={(e) => {
-                const value = e.currentTarget.value;
-                setNotes((prev) =>
-                  prev?.map((n) =>
-                    n.id === note.id ? { ...n, content: value } : n,
-                  ),
-                );
-              }}
+              onChange={(e) => changeEditingNote(e, note.id)}
               onBlur={(e) => blurEditingNote(e, note.id)}
               onKeyDown={(e) => keyDownEditingNote(e, note.id)}
             />

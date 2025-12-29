@@ -3,20 +3,16 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function createNote(content: string) {
+export async function createNoteAction(content: string) {
   await prisma.note.create({
     data: {
       content,
       category: "index",
     },
   });
-
-  revalidatePath("/");
 }
 
-export async function updateNote(id: number, content: string) {
-  "use server";
-
+export async function updateNoteAction(id: number, content: string) {
   await prisma.note.update({
     where: {
       id,
@@ -27,7 +23,7 @@ export async function updateNote(id: number, content: string) {
   });
 }
 
-export async function getNotes() {
+export async function getNotesActions() {
   return prisma.note.findMany({
     orderBy: {
       createdAt: "asc",
