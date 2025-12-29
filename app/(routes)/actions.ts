@@ -1,11 +1,9 @@
+"use server";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function createNote(formData: FormData) {
-  "use server";
-
-  const content = formData.get("content") as string;
-
+export async function createNote(content: string) {
   await prisma.note.create({
     data: {
       content,
@@ -25,6 +23,14 @@ export async function updateNote(id: number, content: string) {
     },
     data: {
       content,
+    },
+  });
+}
+
+export async function getNotes() {
+  return prisma.note.findMany({
+    orderBy: {
+      createdAt: "asc",
     },
   });
 }
